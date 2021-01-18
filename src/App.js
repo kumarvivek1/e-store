@@ -4,23 +4,28 @@ import HomePage from "./pages/homepage/Homepage.component";
 import ShopPage from './pages/shop/shop.component';
 import Header from './components/header/header.component';
 import SignInAndSignUpPage from './pages/signin/signInAndSignUpPage'
-import { auth } from './firebase/firebase.utils'
+import { auth,createUserProfileDocument } from './firebase/firebase.utils'
 import './App.css'
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null)
   
-  
   useEffect(() => {
-    auth.onAuthStateChanged(user => {
-      setCurrentUser(user)
+    auth.onAuthStateChanged(async userAuth => {
+      if (userAuth) {
+        const userRef = await createUserProfileDocument(userAuth)
+        
+        userRef.onSnapshot(snapshot => {
+          setCurrentUser({
+            id: snapshot.id,
+            ...snapshot.data()
+          })
+        })
+      }
+      setCurrentUser(userAuth)
     })
   }, [])
 
-  useEffect(() => {
-    console.log(currentUser)
-  },[currentUser])
-  
   return (
     <div>
       <Header currentUser={currentUser}/>
